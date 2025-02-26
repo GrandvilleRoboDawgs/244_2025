@@ -6,11 +6,10 @@ package frc.robot;
 
 //import static edu.wpi.first.units.Units.Kelvin;
 import static edu.wpi.first.units.Units.Percent;
-
+import java.io.ObjectInputFilter.Config;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.ControlModeValue;
-
 import edu.wpi.first.wpilibj.Joystick;
 //import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PS4Controller;
@@ -22,13 +21,21 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkMaxConfigAccessor;
+import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkBase;
+import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel;
+import com.revrobotics.REVLibError;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-
 
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
@@ -40,10 +47,11 @@ public class Robot extends TimedRobot {
   private final Spark m_CoralRight;
   private Joystick operator = new Joystick(1);
   private final Joystick driver = new Joystick(0);
-  private TalonFX intakepivot = new TalonFX(9);
-  private final SparkMax elevator = new SparkMax(16, MotorType.kBrushless);
-  //public final SparkMaxConfigAccessor configAccessor;
-
+  private TalonFX intakepivot = new TalonFX(8);
+  private SparkMax elevator;
+  // private SparkClosedLoopController maxPID = elevator.getClosedLoopController();
+  // private SparkMaxConfig config = new SparkMaxConfig();
+  // private SparkClosedLoopController m_controller = elevator.getClosedLoopController();
   
 
   public Robot() {
@@ -53,8 +61,22 @@ public class Robot extends TimedRobot {
     m_AlgaePivot = new Spark(2);
     m_CoralLeft = new Spark(3);
     m_CoralRight = new Spark(1);
-    //m_elevator = new SparkMax(16, kBrushless);
-    //SparkMax neo = new SparkMax(16, kBrushless);
+    elevator = new SparkMax(16, MotorType.kBrushless);
+    SparkMaxConfig globalConfig = new SparkMaxConfig();
+    globalConfig.smartCurrentLimit(50).idleMode(IdleMode.kBrake);
+    elevator.configure(globalConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    // config.idleMode(IdleMode.kBrake);
+    // config.encoder.positionConversionFactor(1000).velocityConversionFactor(1000);
+    // config.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder).pid(1.0, 0.0, 0.0);
+    // elevator.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    // boolean isInverted = elevator.configAccessor.getInverted();
+    // double positionFactor = elevator.configAccessor.encoder.getPositionConversionFactor();
+    // double velocityFactor = elevator.configAccessor.encoder.getVelocityConversionFactor();
+    // config.signals.primaryEncoderPositionPeriodMs(5);
+    // double encoder = elevator.getEncoder().getPosition();
+    // //SparkPIDController maxPID = elevator.getPIDController();
+    // m_controller.setReference(encoder, SparkBase.ControlType.kPosition);
+
   }
 
   @Override
@@ -90,19 +112,19 @@ public class Robot extends TimedRobot {
   public void teleopInit() {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();// Auto end
+    
     }
   }
 
   @Override
   public void teleopPeriodic() {
     //Arm Intake
-      if (driver.getRawButton(PS4Controller.Button.kR2.value)){
-        m_ArmIntake.set(.8);
+      if (driver.getRawButton(PS4Controller.Button.kR1.value)){
+        m_ArmIntake.set(.5);
 
 
-    } else if (driver.getRawButton(PS4Controller.Button.kL2.value)) {
-        m_ArmIntake.setInverted(true);
-        m_ArmIntake.set(.8);
+    } else if (driver.getRawButton(PS4Controller.Button.kL1.value)) {
+        m_ArmIntake.set(-.5);
 
     } else {
       m_ArmIntake.stopMotor();
@@ -110,11 +132,10 @@ public class Robot extends TimedRobot {
     } 
     //Algae Intake
       if (operator.getRawButton(PS4Controller.Button.kCircle.value)){
-       m_AlgaeIntake.set(.8);
+       m_AlgaeIntake.set(.5);
 
     } else if (operator.getRawButton(PS4Controller.Button.kSquare.value)){
-      m_AlgaeIntake.setInverted(true);
-      m_AlgaeIntake.set(.8);
+      m_AlgaeIntake.set(-.5);
 
     } else {
       m_AlgaeIntake.stopMotor();
@@ -122,11 +143,10 @@ public class Robot extends TimedRobot {
     }
     //Algae pivot
       if (operator.getRawButton(PS4Controller.Button.kR1.value)){
-      m_AlgaePivot.set(.5);
+      m_AlgaePivot.set(.25);
 
     } else if (operator.getRawButton(PS4Controller.Button.kL1.value)){
-      m_AlgaePivot.setInverted(true);
-      m_AlgaePivot.set(.5);
+      m_AlgaePivot.set(-.25);
     
     } else {
       m_AlgaePivot.stopMotor();
@@ -135,16 +155,12 @@ public class Robot extends TimedRobot {
 
     // Coral Left/Right
     if (operator.getRawButton(PS4Controller.Button.kL2.value)){
-      m_CoralLeft.setInverted(true);
       m_CoralLeft.set(.25);
-      m_CoralRight.setInverted(true);
       m_CoralRight.set(.25);
 
     } else if (operator.getRawButton(PS4Controller.Button.kR2.value)){
-      m_CoralLeft.setInverted(true);
-      m_CoralLeft.set(.25);
-      //m_CoralRight.setInverted(true);
-      m_CoralRight.set(.25);
+      m_CoralLeft.set(-.25);
+      m_CoralRight.set(-.25);
 
     } else {
       m_CoralLeft.stopMotor();
@@ -153,25 +169,32 @@ public class Robot extends TimedRobot {
    
     
     // IntakePivot*
-    if (driver.getRawButton(PS4Controller.Button.kL1.value)){
-      intakepivot.set(.5);
-
-    }else if (driver.getRawButton(PS4Controller.Button.kR1.value)){
-      intakepivot.set(-.5);
-
+    if (driver.getRawAxis(PS4Controller.Axis.kL2.value) > .1) {
+      intakepivot.set(driver.getRawAxis(PS4Controller.Axis.kL2.value) * .6);
+    } else if (driver.getRawAxis(PS4Controller.Axis.kR2.value) > .1) {
+      intakepivot.set(-driver.getRawAxis(PS4Controller.Axis.kR2.value) * .6);
     } else {
       intakepivot.stopMotor();
     }
 
     //elevator *
-    if (operator.getRawAxis(PS4Controller.Axis.kLeftX.value) >= .1) {
-      elevator.set(operator.getRawAxis(XboxController.Axis.kLeftX.value) * .6);
-    } else if (operator.getRawAxis(XboxController.Axis.kRightX.value) < -.1) {
-      elevator.set(-operator.getRawAxis(XboxController.Axis.kRightX.value) * .6);
-    } else {
-      elevator.stopMotor();
-    }
-      
+    // if (operator.getRawAxis(PS4Controller.Axis.kLeftX.value) >= .1) {
+    //   elevator.set( .6);
+    // } else if (operator.getRawAxis(PS4Controller.Axis.kLeftX.value) <= .1){
+    //   elevator.set(-.6);
+    // } else {
+    //   elevator.stopMotor();
+    // }
+      if (operator.getRawButton(PS4Controller.Button.kShare.value)) {
+        // m_controller.setReference(1.0, ControlType.kPosition);
+        elevator.set(.75);
+      } else if (operator.getRawButton(PS4Controller.Button.kOptions.value)) {
+        // m_controller.setReference(-1.0, ControlType.kPosition);
+        elevator.set(-.75);
+      } else {
+        // m_controller.setReference(0.0, ControlType.kPosition);
+        elevator.set(0.0);
+      }
     
   }
 
