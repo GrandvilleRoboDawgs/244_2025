@@ -2,31 +2,28 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
+
 package frc.robot;
 
-//import static edu.wpi.first.units.Units.Kelvin;
 import static edu.wpi.first.units.Units.Percent;
 import java.io.ObjectInputFilter.Config;
 import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.ControlModeValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+import edu.wpi.first.wpilibj.DutyCycleEncoder;
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
-//import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PS4Controller;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import com.revrobotics.spark.config.SparkMaxConfigAccessor;
-import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkBase;
@@ -35,7 +32,11 @@ import com.revrobotics.spark.SparkLowLevel;
 import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.cameraserver.CameraServer;
+//import edu.wpi.first.wpilibj.IterativeRobot;
+
 
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
@@ -49,10 +50,12 @@ public class Robot extends TimedRobot {
   private final Joystick driver = new Joystick(0);
   private TalonFX intakepivot = new TalonFX(8);
   private SparkMax elevator;
-  // private SparkClosedLoopController maxPID = elevator.getClosedLoopController();
-  // private SparkMaxConfig config = new SparkMaxConfig();
-  // private SparkClosedLoopController m_controller = elevator.getClosedLoopController();
+  //private DutyCycleEncoder elevator_encoder = new DutyCycleEncoder(8);
+  private DutyCycleEncoder Arm_encoder = new DutyCycleEncoder(9);
+  Encoder elevator_encoder = new Encoder(7,8);
   
+  
+
 
   public Robot() {
     m_robotContainer = new RobotContainer();
@@ -65,30 +68,26 @@ public class Robot extends TimedRobot {
     SparkMaxConfig globalConfig = new SparkMaxConfig();
     globalConfig.smartCurrentLimit(50).idleMode(IdleMode.kBrake);
     elevator.configure(globalConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    // config.idleMode(IdleMode.kBrake);
-    // config.encoder.positionConversionFactor(1000).velocityConversionFactor(1000);
-    // config.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder).pid(1.0, 0.0, 0.0);
-    // elevator.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    // boolean isInverted = elevator.configAccessor.getInverted();
-    // double positionFactor = elevator.configAccessor.encoder.getPositionConversionFactor();
-    // double velocityFactor = elevator.configAccessor.encoder.getVelocityConversionFactor();
-    // config.signals.primaryEncoderPositionPeriodMs(5);
-    // double encoder = elevator.getEncoder().getPosition();
-    // //SparkPIDController maxPID = elevator.getPIDController();
-    // m_controller.setReference(encoder, SparkBase.ControlType.kPosition);
-
   }
+   
+
 
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run(); 
+    SmartDashboard.putNumber("elevator_encoderValue", elevator_encoder.getDistance());
+    SmartDashboard.putNumber("Arm_EncoderValue", Arm_encoder.get());
+    intakepivot.setNeutralMode(NeutralModeValue.Brake);
+    //m_AlgaePivot.IdleMode(IdleMode.kBrake);
   }
 
   @Override
   public void disabledInit() {}
 
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic() {
+ 
+}
 
   @Override
   public void disabledExit() {}
@@ -118,23 +117,24 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
+    
     //Arm Intake
       if (driver.getRawButton(PS4Controller.Button.kR1.value)){
-        m_ArmIntake.set(.5);
+        m_ArmIntake.set(.75);
 
 
     } else if (driver.getRawButton(PS4Controller.Button.kL1.value)) {
-        m_ArmIntake.set(-.5);
+        m_ArmIntake.set(-.75);
 
     } else {
       m_ArmIntake.stopMotor();
 
     } 
     //Algae Intake
-      if (operator.getRawButton(PS4Controller.Button.kCircle.value)){
+      if (operator.getRawButton(PS4Controller.Button.kL3.value)){
        m_AlgaeIntake.set(.5);
 
-    } else if (operator.getRawButton(PS4Controller.Button.kSquare.value)){
+    } else if (operator.getRawButton(PS4Controller.Button.kR3.value)){
       m_AlgaeIntake.set(-.5);
 
     } else {
@@ -142,25 +142,25 @@ public class Robot extends TimedRobot {
 
     }
     //Algae pivot
-      if (operator.getRawButton(PS4Controller.Button.kR1.value)){
-      m_AlgaePivot.set(.25);
+      if (operator.getRawButton(PS4Controller.Button.kL1.value)){
+      m_AlgaePivot.set(.45);
 
-    } else if (operator.getRawButton(PS4Controller.Button.kL1.value)){
-      m_AlgaePivot.set(-.25);
+    } else if (operator.getRawButton(PS4Controller.Button.kR1.value)){
+      m_AlgaePivot.set(-.45);
     
     } else {
-      m_AlgaePivot.stopMotor();
+      m_AlgaePivot.set(0);
     }
 
 
     // Coral Left/Right
-    if (operator.getRawButton(PS4Controller.Button.kL2.value)){
-      m_CoralLeft.set(.25);
-      m_CoralRight.set(.25);
+    if (operator.getRawButton(PS4Controller.Button.kR2.value)){
+      m_CoralLeft.set(.5);
+      m_CoralRight.set(.5);
 
-    } else if (operator.getRawButton(PS4Controller.Button.kR2.value)){
-      m_CoralLeft.set(-.25);
-      m_CoralRight.set(-.25);
+    } else if (operator.getRawButton(PS4Controller.Button.kL2.value)){
+      m_CoralLeft.set(-.5);
+      m_CoralRight.set(-.5);
 
     } else {
       m_CoralLeft.stopMotor();
@@ -177,23 +177,61 @@ public class Robot extends TimedRobot {
       intakepivot.stopMotor();
     }
 
-    //elevator *
-    // if (operator.getRawAxis(PS4Controller.Axis.kLeftX.value) >= .1) {
-    //   elevator.set( .6);
-    // } else if (operator.getRawAxis(PS4Controller.Axis.kLeftX.value) <= .1){
-    //   elevator.set(-.6);
-    // } else {
-    //   elevator.stopMotor();
-    // }
-      if (operator.getRawButton(PS4Controller.Button.kShare.value)) {
-        // m_controller.setReference(1.0, ControlType.kPosition);
-        elevator.set(.75);
-      } else if (operator.getRawButton(PS4Controller.Button.kOptions.value)) {
-        // m_controller.setReference(-1.0, ControlType.kPosition);
-        elevator.set(-.75);
+    //elevator
+  
+    
+      if (operator.getRawButton(PS4Controller.Button.kTriangle.value)) {
+          if (elevator_encoder.get() < 19000 ) {
+            elevator.set(.85);
+        } else if (elevator_encoder.get() > 19001 && elevator_encoder.get() < 19500) {
+            elevator.set(.5);
+        } else if (elevator_encoder.get() > 20080) {
+            elevator.set(0.0);
+        }
+      }
+        else if (operator.getRawButton(PS4Controller.Button.kSquare.value)) {
+          if (elevator_encoder.get() < 9000 ) {
+            elevator.set(.85);
+        } else if (elevator_encoder.get() > 9001 && elevator_encoder.get() < 9500) {
+            elevator.set(.5);
+        } else if (elevator_encoder.get() > 9500) {
+            elevator.set(0.0);
+        } 
+
+      } else if (operator.getRawButton(PS4Controller.Button.kCross.value)) {
+          if (elevator_encoder.get() < .31 ) {
+            elevator.set(.85);
+        } else if (elevator_encoder.get() > .33 ) {
+            elevator.set(-.75);
+        } else if (elevator_encoder.get() > .311 && elevator_encoder.get() < .329) {
+            elevator.set(0.0);
+        } else {
+          
+        }
+
+      } else if (operator.getRawButton(PS4Controller.Button.kCircle.value)) {
+        if (elevator_encoder.get() < 2800 ) {
+          elevator.set(.85);
+      } else if (elevator_encoder.get() > 2801 && elevator_encoder.get() <3300 ) {
+          elevator.set(.5);
+      } else if (elevator_encoder.get() > 3300) {
+          elevator.set(0.0);
       } else {
-        // m_controller.setReference(0.0, ControlType.kPosition);
+        
+      }
+      
+      } else if (elevator_encoder.get() <= 0) {
         elevator.set(0.0);
+
+      // } else if (operator.getRawButton(PS4Controller.Button.kShare.value)) {
+      //   elevator.set(0.75);
+
+      // } else if (operator.getRawButton(PS4Controller.Button.kOptions.value)) {
+      //   elevator.set(-.75);
+
+      } else {
+        elevator.set(0);
+
       }
     
   }
