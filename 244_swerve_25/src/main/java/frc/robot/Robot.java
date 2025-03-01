@@ -16,6 +16,8 @@ import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PS4Controller;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.CounterBase.EncodingType;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -41,6 +43,13 @@ import edu.wpi.first.cameraserver.CameraServer;
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
   private final RobotContainer m_robotContainer;
+  private Command m_mauto2Command;
+  private Command m_mauto4Command;
+  private Command m_mauto3Command;
+  private Command m_mauto5Command;
+  private Command m_lbautoCommand;
+  Timer time1 = new Timer();
+    Command autoSelected;
   private final Spark m_ArmIntake;
   private final Spark m_AlgaeIntake;
   private final Spark m_AlgaePivot;
@@ -51,9 +60,9 @@ public class Robot extends TimedRobot {
   private TalonFX intakepivot = new TalonFX(8);
   private SparkMax elevator;
   //private DutyCycleEncoder elevator_encoder = new DutyCycleEncoder(8);
-  private DutyCycleEncoder Arm_encoder = new DutyCycleEncoder(9);
-  Encoder elevator_encoder = new Encoder(7,8);
-  
+  //private DutyCycleEncoder Arm_encoder = new DutyCycleEncoder(9);
+  Encoder elevator_encoder = new Encoder(7,8, false, EncodingType.k2X);
+  Encoder Arm_encoder = new Encoder(9, 6);
   
 
 
@@ -68,9 +77,17 @@ public class Robot extends TimedRobot {
     SparkMaxConfig globalConfig = new SparkMaxConfig();
     globalConfig.smartCurrentLimit(50).idleMode(IdleMode.kBrake);
     elevator.configure(globalConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    CameraServer.startAutomaticCapture();
+    
   }
    
-
+  @Override
+  public void robotInit() {
+    // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
+    // autonomous chooser on the dashboard.
+    //m_robotContainer = new RobotContainer();
+    //m_lbautoCommand = m_robotContainer.m_lbautoCommand();
+  }
 
   @Override
   public void robotPeriodic() {
@@ -102,7 +119,9 @@ public class Robot extends TimedRobot {
   }
 
   @Override
-  public void autonomousPeriodic() {}
+  public void autonomousPeriodic() {
+
+  }
 
   @Override
   public void autonomousExit() {}
@@ -170,11 +189,11 @@ public class Robot extends TimedRobot {
     
     // IntakePivot*
     if (driver.getRawAxis(PS4Controller.Axis.kL2.value) > .1) {
-      intakepivot.set(driver.getRawAxis(PS4Controller.Axis.kL2.value) * .6);
+      intakepivot.set(driver.getRawAxis(PS4Controller.Axis.kL2.value) * .3);
     } else if (driver.getRawAxis(PS4Controller.Axis.kR2.value) > .1) {
-      intakepivot.set(-driver.getRawAxis(PS4Controller.Axis.kR2.value) * .6);
+      intakepivot.set(-driver.getRawAxis(PS4Controller.Axis.kR2.value) * .3);
     } else {
-      intakepivot.stopMotor();
+      intakepivot.set(0.0);
     }
 
     //elevator
@@ -210,31 +229,32 @@ public class Robot extends TimedRobot {
         }
 
       } else if (operator.getRawButton(PS4Controller.Button.kCircle.value)) {
-        if (elevator_encoder.get() < 2800 ) {
-          elevator.set(.85);
-      } else if (elevator_encoder.get() > 2801 && elevator_encoder.get() <3300 ) {
-          elevator.set(.5);
-      } else if (elevator_encoder.get() > 3300) {
-          elevator.set(0.0);
-      } else {
-        
-      }
+          if (elevator_encoder.get() < 2800 ) {
+            elevator.set(.85);
+        } else if (elevator_encoder.get() > 2801 && elevator_encoder.get() <3300 ) {
+            elevator.set(.5);
+        } else if (elevator_encoder.get() > 3300) {
+            elevator.set(0.0);
+        } else {
+          
+        }
       
       } else if (elevator_encoder.get() <= 0) {
         elevator.set(0.0);
 
-      // } else if (operator.getRawButton(PS4Controller.Button.kShare.value)) {
-      //   elevator.set(0.75);
+      } else if (operator.getRawButton(PS4Controller.Button.kShare.value)) {
+        elevator.set(0.75);
 
-      // } else if (operator.getRawButton(PS4Controller.Button.kOptions.value)) {
-      //   elevator.set(-.75);
+      } else if (operator.getRawButton(PS4Controller.Button.kOptions.value)) {
+        elevator.set(-.75);
 
       } else {
         elevator.set(0);
 
       }
+      
     
-  }
+    }
 
   @Override
   public void teleopExit() {}
