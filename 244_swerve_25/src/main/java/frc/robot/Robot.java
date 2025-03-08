@@ -147,7 +147,7 @@ public class Robot extends TimedRobot {
     //   // m_robotContainer.drivetrain.applyRequest(() -> drive.withVelocityX(-.5 * 4.73));
     //   // m_robotContainer.drivetrain.applyRequest(() -> point.withModuleDirection(new Rotation2d(-.5, 0)));
       if (timer.get() >= 1.2 && timer.get() < 1.5) {
-      intakepivot.set(.15);
+      intakepivot.set(.25);
     } else if(timer.get() >= 1.5 && timer.get() < 3.0) {
       intakepivot.set(0);
       m_ArmIntake.set(-.6);
@@ -207,7 +207,8 @@ public class Robot extends TimedRobot {
     
     // Coral limit
     // if (!LimitSwitch.get()) {
-    //     Coral.set(.1);
+    //  m_CoralLeft.set(.5);
+    //  m_CoralRight.set(.5);
   
     // Coral Left/Right
     //} else
