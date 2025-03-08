@@ -5,13 +5,17 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Percent;
-import java.io.ObjectInputFilter.Config;
-import com.ctre.phoenix6.controls.ControlRequest;
+//import static edu.wpi.first.units.Units.Percent;
+//import java.io.ObjectInputFilter.Config;
+//import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.ControlModeValue;
+//import com.ctre.phoenix6.signals.ControlModeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.wpilibj.DutyCycleEncoder;
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.ctre.phoenix6.swerve.SwerveRequest;
+
+import edu.wpi.first.wpilibj.DigitalInput;
+//import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PS4Controller;
@@ -22,34 +26,32 @@ import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.SparkBase;
-import com.revrobotics.spark.SparkClosedLoopController;
-import com.revrobotics.spark.SparkLowLevel;
-import com.revrobotics.REVLibError;
-import com.revrobotics.RelativeEncoder;
-import com.revrobotics.spark.SparkAbsoluteEncoder;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
+// import com.revrobotics.spark.SparkBase;
+// import com.revrobotics.spark.SparkClosedLoopController;
+// import com.revrobotics.spark.SparkLowLevel;
+// import com.revrobotics.REVLibError;
+// import com.revrobotics.RelativeEncoder;
+// import com.revrobotics.spark.SparkAbsoluteEncoder;
+// import edu.wpi.first.wpilibj2.command.Commands;
+// import edu.wpi.first.wpilibj2.command.RunCommand;
+// import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.cameraserver.CameraServer;
 //import edu.wpi.first.wpilibj.IterativeRobot;
+import edu.wpi.first.math.geometry.Rotation2d;
 
 
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
   private final RobotContainer m_robotContainer;
-  private Command m_mauto2Command;
-  private Command m_mauto4Command;
-  private Command m_mauto3Command;
-  private Command m_mauto5Command;
-  private Command m_lbautoCommand;
-  Timer time1 = new Timer();
-    Command autoSelected;
+
   private final Spark m_ArmIntake;
   private final Spark m_AlgaeIntake;
   private final Spark m_AlgaePivot;
@@ -59,12 +61,18 @@ public class Robot extends TimedRobot {
   private final Joystick driver = new Joystick(0);
   private TalonFX intakepivot = new TalonFX(8);
   private SparkMax elevator;
+  private SparkMax Coral;
   //private DutyCycleEncoder elevator_encoder = new DutyCycleEncoder(8);
   //private DutyCycleEncoder Arm_encoder = new DutyCycleEncoder(9);
   Encoder elevator_encoder = new Encoder(7,8, false, EncodingType.k2X);
   Encoder Arm_encoder = new Encoder(9, 6);
-  
+  private DigitalInput LimitSwitch;
 
+
+  // private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
+  Timer timer;
+  // private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
+  //           .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
 
   public Robot() {
     m_robotContainer = new RobotContainer();
@@ -74,18 +82,20 @@ public class Robot extends TimedRobot {
     m_CoralLeft = new Spark(3);
     m_CoralRight = new Spark(1);
     elevator = new SparkMax(16, MotorType.kBrushless);
+    Coral = new SparkMax(17, MotorType.kBrushless);
     SparkMaxConfig globalConfig = new SparkMaxConfig();
     globalConfig.smartCurrentLimit(50).idleMode(IdleMode.kBrake);
     elevator.configure(globalConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     CameraServer.startAutomaticCapture();
-    
+    timer = new Timer();
+    LimitSwitch = new DigitalInput(5);
   }
    
   @Override
   public void robotInit() {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
-    //m_robotContainer = new RobotContainer();
+    // m_robotContainer = new RobotContainer();
     //m_lbautoCommand = m_robotContainer.m_lbautoCommand();
   }
 
@@ -94,6 +104,7 @@ public class Robot extends TimedRobot {
     CommandScheduler.getInstance().run(); 
     SmartDashboard.putNumber("elevator_encoderValue", elevator_encoder.getDistance());
     SmartDashboard.putNumber("Arm_EncoderValue", Arm_encoder.get());
+    SmartDashboard.putBoolean("limitswitch", LimitSwitch.get());
     intakepivot.setNeutralMode(NeutralModeValue.Brake);
     //m_AlgaePivot.IdleMode(IdleMode.kBrake);
   }
@@ -111,6 +122,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
+    timer.start();
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     if (m_autonomousCommand != null) {
@@ -121,6 +133,28 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousPeriodic() {
 
+    
+
+    // if(timer.get() < 1.0) {
+      // frontLeft.set(-.5);
+      // backRight.set(-.5);
+      // frontRight.set(-.5);
+    //   m_robotContainer.driveBack();
+    //   // m_robotContainer.drivetrain.setControl(drive.withVelocityX(-.5 * 4.73));
+    //   // m_robotContainer.drivetrain.sysIdDynamic(Direction.kReverse);
+    //   // m_robotContainer.drivetrain.getModule(0).getDriveMotor().set(.5);
+    //   // m_robotContainer.drivetrain.setControl(drive.withVelocityX(-.5* 4.73));
+    //   // m_robotContainer.drivetrain.applyRequest(() -> drive.withVelocityX(-.5 * 4.73));
+    //   // m_robotContainer.drivetrain.applyRequest(() -> point.withModuleDirection(new Rotation2d(-.5, 0)));
+      if (timer.get() >= 1.2 && timer.get() < 1.5) {
+      intakepivot.set(.15);
+    } else if(timer.get() >= 1.5 && timer.get() < 3.0) {
+      intakepivot.set(0);
+      m_ArmIntake.set(-.6);
+    } else {
+      m_ArmIntake.set(0);
+      intakepivot.set(0);
+    }
   }
 
   @Override
@@ -128,21 +162,21 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
-    if (m_autonomousCommand != null) {
-      m_autonomousCommand.cancel();// Auto end
+    // if (m_autonomousCommand != null) {
+    //   m_autonomousCommand.cancel();// Auto end
     
-    }
+    // }
   }
 
   @Override
   public void teleopPeriodic() {
     
     //Arm Intake
-      if (driver.getRawButton(PS4Controller.Button.kR1.value)){
+      if (driver.getRawButton(PS4Controller.Button.kR2.value)){
         m_ArmIntake.set(.75);
 
 
-    } else if (driver.getRawButton(PS4Controller.Button.kL1.value)) {
+    } else if (driver.getRawButton(PS4Controller.Button.kL2.value)) {
         m_ArmIntake.set(-.75);
 
     } else {
@@ -150,10 +184,10 @@ public class Robot extends TimedRobot {
 
     } 
     //Algae Intake
-      if (operator.getRawButton(PS4Controller.Button.kL3.value)){
+      if (driver.getRawButton(PS4Controller.Button.kL1.value)){
        m_AlgaeIntake.set(.5);
 
-    } else if (operator.getRawButton(PS4Controller.Button.kR3.value)){
+    } else if (driver.getRawButton(PS4Controller.Button.kR1.value)){
       m_AlgaeIntake.set(-.5);
 
     } else {
@@ -170,50 +204,57 @@ public class Robot extends TimedRobot {
     } else {
       m_AlgaePivot.set(0);
     }
-
-
+    
+    // Coral limit
+    // if (!LimitSwitch.get()) {
+    //     Coral.set(.1);
+  
     // Coral Left/Right
-    if (operator.getRawButton(PS4Controller.Button.kR2.value)){
+    //} else
+     if (operator.getRawButton(PS4Controller.Button.kR2.value)){
+      //Coral.set(.65);
       m_CoralLeft.set(.5);
       m_CoralRight.set(.5);
 
     } else if (operator.getRawButton(PS4Controller.Button.kL2.value)){
+      // Coral.set(-.5);
       m_CoralLeft.set(-.5);
       m_CoralRight.set(-.5);
 
     } else {
+      //Coral.set(0);
       m_CoralLeft.stopMotor();
       m_CoralRight.stopMotor();    
     }
    
     
     // IntakePivot*
-    if (driver.getRawAxis(PS4Controller.Axis.kL2.value) > .1) {
-      intakepivot.set(driver.getRawAxis(PS4Controller.Axis.kL2.value) * .3);
-    } else if (driver.getRawAxis(PS4Controller.Axis.kR2.value) > .1) {
-      intakepivot.set(-driver.getRawAxis(PS4Controller.Axis.kR2.value) * .3);
+      if (operator.getRawButton(PS4Controller.Button.kL3.value)) {
+        intakepivot.set(.5);
+    } else if (operator.getRawButton(PS4Controller.Button.kR3.value)) {
+        intakepivot.set(-.5);
     } else {
-      intakepivot.set(0.0);
+        intakepivot.set(0.0);
     }
 
     //elevator
   
     
       if (operator.getRawButton(PS4Controller.Button.kTriangle.value)) {
-          if (elevator_encoder.get() < 19000 ) {
+          if (elevator_encoder.get() < 18050 ) {
             elevator.set(.85);
-        } else if (elevator_encoder.get() > 19001 && elevator_encoder.get() < 19500) {
+        } else if (elevator_encoder.get() > 18100 && elevator_encoder.get() < 18650) {
             elevator.set(.5);
-        } else if (elevator_encoder.get() > 20080) {
+        } else if (elevator_encoder.get() > 18700) {
             elevator.set(0.0);
         }
       }
         else if (operator.getRawButton(PS4Controller.Button.kSquare.value)) {
-          if (elevator_encoder.get() < 9000 ) {
+          if (elevator_encoder.get() < 8353 ) {
             elevator.set(.85);
-        } else if (elevator_encoder.get() > 9001 && elevator_encoder.get() < 9500) {
+        } else if (elevator_encoder.get() > 8353 && elevator_encoder.get() < 8853) {
             elevator.set(.5);
-        } else if (elevator_encoder.get() > 9500) {
+        } else if (elevator_encoder.get() > 8853) {
             elevator.set(0.0);
         } 
 
@@ -229,11 +270,11 @@ public class Robot extends TimedRobot {
         }
 
       } else if (operator.getRawButton(PS4Controller.Button.kCircle.value)) {
-          if (elevator_encoder.get() < 2800 ) {
+          if (elevator_encoder.get() < 2300 ) {
             elevator.set(.85);
-        } else if (elevator_encoder.get() > 2801 && elevator_encoder.get() <3300 ) {
+        } else if (elevator_encoder.get() > 2300 && elevator_encoder.get() <2695 ) {
             elevator.set(.5);
-        } else if (elevator_encoder.get() > 3300) {
+        } else if (elevator_encoder.get() > 2695) {
             elevator.set(0.0);
         } else {
           

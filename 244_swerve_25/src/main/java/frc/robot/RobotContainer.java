@@ -7,14 +7,21 @@ package frc.robot;
 import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 //import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+
+// import edu.wpi.first.wpilibj2.command.Command;
+// import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+// import frc.robot.commands.DriveForwardCommand;
+// import frc.robot.subsystems.DrivetrainSubsystem;
 
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -70,7 +77,29 @@ public class RobotContainer {
         drivetrain.registerTelemetry(logger::telemeterize);
     }
 
+    public void driveBack() {
+        // drivetrain.sysIdDynamic(Direction.kReverse);
+        // drivetrain.setControl(drive.withVelocityX(-.5 * 4.73));
+        drivetrain.applyRequest(() -> drive.withVelocityX(-.5 * 4.73));
+        drivetrain.applyRequest(() -> point.withModuleDirection(new Rotation2d(-.5, 0)));
+    }
+
     public Command getAutonomousCommand() {
-        return Commands.print("No autonomous command configured");
+        return new SequentialCommandGroup(
+            drivetrain.applyRequest(()->
+            drive.withVelocityX(.25*MaxSpeed)
+            .withVelocityY(0)
+            .withRotationalRate(0)).withTimeout(1.2),
+            drivetrain.applyRequest(()->
+            drive.withVelocityX(0)
+            .withVelocityY(0)
+            .withRotationalRate(0)).withTimeout(10));
+            
+        
+            //new DriveForwardCommand(drivetrain, 0.5, 2) // Drive forward at 50% speed for 2 seconds
+            // // Add more commands here if needed
+        
+        // return new PathPlannerAuto("New Auto");
+        // //return Commands.print("No autonomous command configured");
     }
 }
