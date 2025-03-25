@@ -207,18 +207,18 @@ public class Robot extends TimedRobot {
 
 
 
-    // if (timer.get() >= 1.2 && timer.get() < 5) {
-    //     if (elevator_encoder.get() < 19050 ) {
-    //       elevator.set(.75);
-    //   } else if (elevator_encoder.get() > 19050 && elevator_encoder.get() < 19550) {
-    //       elevator.set(.5);
-    //   } else if (elevator_encoder.get() > 19550) {
-    //       elevator.set(0.018);
-    //   }
-    // } else if (timer.get() >= 5 && timer.get() < 6) {
-    //     m_CoralLeft.set(.5);
-    //     m_CoralRight.set(.5);
-    // }
+    if (timer.get() >= 1.2 && timer.get() < 5) {
+        if (elevator_encoder.get() < 19050 ) {
+          elevator.set(.75);
+      } else if (elevator_encoder.get() > 19050 && elevator_encoder.get() < 19550) {
+          elevator.set(.5);
+      } else if (elevator_encoder.get() > 19550) {
+          elevator.set(0.018);
+      }
+    } else if (timer.get() >= 5 && timer.get() < 6) {
+        m_CoralLeft.set(.5);
+        m_CoralRight.set(.5);
+    }
   }
 
   @Override
