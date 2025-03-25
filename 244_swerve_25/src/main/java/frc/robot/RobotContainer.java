@@ -4,15 +4,15 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.*;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
-import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 //import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -85,9 +85,14 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
+        LimelightHelpers.PoseEstimate limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
+        double tx = LimelightHelpers.getTX("limelight");
+        double ty = LimelightHelpers.getTY("limelight");
+        double kP = 0.008; // Tune this value
+        double strafeSpeed = (tx - 3) * kP;
         return new SequentialCommandGroup(
             drivetrain.applyRequest(()->
-            drive.withVelocityX(-.25*MaxSpeed)
+            drive.withVelocityX(.25*MaxSpeed)
             .withVelocityY(0)
             .withRotationalRate(0)).withTimeout(1.2),
             drivetrain.applyRequest(()->

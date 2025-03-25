@@ -5,11 +5,14 @@
 
 package frc.robot;
 
+import java.lang.Thread.State;
+
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
+import com.ctre.phoenix6.hardware.Pigeon2;
 //import static edu.wpi.first.units.Units.Percent;
 //import java.io.ObjectInputFilter.Config;
 //import com.ctre.phoenix6.controls.ControlRequest;
@@ -24,6 +27,7 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PS4Controller;
+import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.CounterBase.EncodingType;
@@ -65,6 +69,7 @@ public class Robot extends TimedRobot {
   private final Spark m_AlgaePivot;
   private final Spark m_CoralLeft;
   private final Spark m_CoralRight;
+  private Servo m_Servo;
   private Joystick operator = new Joystick(1);
   private final Joystick driver = new Joystick(0);
   private TalonFX winch = new TalonFX(8);
@@ -75,6 +80,7 @@ public class Robot extends TimedRobot {
   Encoder elevator_encoder = new Encoder(7,8, false, EncodingType.k2X);
   Encoder Arm_encoder = new Encoder(9, 6);
   private DigitalInput LimitSwitch;
+  private final Pigeon2 pigeon = new Pigeon2(15, "rio");
 
 
   // private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
@@ -97,6 +103,8 @@ public class Robot extends TimedRobot {
     CameraServer.startAutomaticCapture();
     timer = new Timer();
     LimitSwitch = new DigitalInput(5);
+    m_Servo = new Servo(5);
+    double tx = LimelightHelpers.getTX("limelight");
 
 // //Camera stuff
 //     m_visionThread =
@@ -156,8 +164,9 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("elevator_encoderValue", elevator_encoder.getDistance());
     SmartDashboard.putNumber("Arm_EncoderValue", Arm_encoder.get());
     SmartDashboard.putBoolean("limitswitch", LimitSwitch.get());
+    SmartDashboard.putNumber("x value", LimelightHelpers.getTX("limelight"));
     winch.setNeutralMode(NeutralModeValue.Brake);
-    //m_AlgaePivot.IdleMode(IdleMode.kBrake);
+    // m_AlgaePivot.IdleMode(IdleMode.kBrake);
   }
 
   @Override
@@ -184,20 +193,7 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousPeriodic() {
 
-    
 
-    // if(timer.get() < 1.0) {
-      // frontLeft.set(-.5);
-      // backRight.set(-.5);
-      // frontRight.set(-.5);
-    //   m_robotContainer.driveBack();
-    //   // m_robotContainer.drivetrain.setControl(drive.withVelocityX(-.5 * 4.73));
-    //   // m_robotContainer.drivetrain.sysIdDynamic(Direction.kReverse);
-    //   // m_robotContainer.drivetrain.getModule(0).getDriveMotor().set(.5);
-    //   // m_robotContainer.drivetrain.setControl(drive.withVelocityX(-.5* 4.73));
-    //   // m_robotContainer.drivetrain.applyRequest(() -> drive.withVelocityX(-.5 * 4.73));
-    //   // m_robotContainer.drivetrain.applyRequest(() -> point.withModuleDirection(new Rotation2d(-.5, 0)));
-      
 
     //   if (timer.get() >= 1.2 && timer.get() < 1.5) {
     //   intakepivot.set(.25);
@@ -208,18 +204,21 @@ public class Robot extends TimedRobot {
     //   m_ArmIntake.set(0);
     //   intakepivot.set(0);
     // }
-    if (timer.get() >= 1.2 && timer.get() < 5) {
-        if (elevator_encoder.get() < 19050 ) {
-          elevator.set(.65);
-      } else if (elevator_encoder.get() > 19050 && elevator_encoder.get() < 19550) {
-          elevator.set(.3);
-      } else if (elevator_encoder.get() > 19550) {
-          elevator.set(0.018);
-      }
-    } else if (timer.get() >= 5 && timer.get() < 6) {
-        m_CoralLeft.set(.5);
-        m_CoralRight.set(.5);
-    }
+
+
+
+    // if (timer.get() >= 1.2 && timer.get() < 5) {
+    //     if (elevator_encoder.get() < 19050 ) {
+    //       elevator.set(.75);
+    //   } else if (elevator_encoder.get() > 19050 && elevator_encoder.get() < 19550) {
+    //       elevator.set(.5);
+    //   } else if (elevator_encoder.get() > 19550) {
+    //       elevator.set(0.018);
+    //   }
+    // } else if (timer.get() >= 5 && timer.get() < 6) {
+    //     m_CoralLeft.set(.5);
+    //     m_CoralRight.set(.5);
+    // }
   }
 
   @Override
@@ -228,7 +227,7 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopInit() {
     // if (m_autonomousCommand != null) {
-    //   m_autonomousCommand.cancel();// Auto end
+    //   m_autonomousCommand.cancel();
     
     // }
   }
@@ -236,18 +235,18 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     
-    //Arm Intake
-      if (driver.getRawButton(PS4Controller.Button.kR2.value)){
-        m_ArmIntake.set(.75);
+    // //Arm Intake
+    //   if (driver.getRawButton(PS4Controller.Button.kR2.value)){
+    //     m_ArmIntake.set(.75);
 
 
-    } else if (driver.getRawButton(PS4Controller.Button.kL2.value)) {
-        m_ArmIntake.set(-.75);
+    // } else if (driver.getRawButton(PS4Controller.Button.kL2.value)) {
+    //     m_ArmIntake.set(-.75);
 
-    } else {
-      m_ArmIntake.set(0);
+    // } else {
+    //   m_ArmIntake.set(0);
 
-    } 
+    // } 
 
     //Algae Intake
       if (driver.getRawButton(PS4Controller.Button.kL1.value)){
@@ -293,12 +292,20 @@ public class Robot extends TimedRobot {
       m_CoralRight.stopMotor();    
     }
    
-    
-    // IntakePivot*
+    // ramp servo
       if (operator.getRawButton(PS4Controller.Button.kL3.value)) {
-        winch.set(.5);
+        m_Servo.set(1);
     } else if (operator.getRawButton(PS4Controller.Button.kR3.value)) {
-        winch.set(-.5);
+        m_Servo.set(0);
+    } else {
+
+    }
+    
+    // winch
+      if (driver.getRawButton(PS4Controller.Button.kL2.value)) {
+        winch.set(.85);
+    } else if (driver.getRawButton(PS4Controller.Button.kR2.value)) {
+        winch.set(-.85);
     } else {
         winch.set(0.0);
     }
@@ -327,11 +334,11 @@ public class Robot extends TimedRobot {
       } else if (operator.getRawButton(PS4Controller.Button.kCross.value)) {
           if (elevator_encoder.get() < .31 ) {
             elevator.set(.25);
-        } else if (elevator_encoder.get() > .43 ) {
-            elevator.set(-.70);
-        } else if (elevator_encoder.get() > .411 && elevator_encoder.get() < .429) {
+        } else if (elevator_encoder.get() > .53 ) {
+            elevator.set(-.80);
+        } else if (elevator_encoder.get() > .451 && elevator_encoder.get() < .529) {
             elevator.set(-.40);
-        } else if (elevator_encoder.get() > .311 && elevator_encoder.get() < .41) {
+        } else if (elevator_encoder.get() > .311 && elevator_encoder.get() < .45) {
             elevator.set(0.018);
         }
         else {
