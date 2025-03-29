@@ -90,31 +90,263 @@ public class RobotContainer {
         double tx = LimelightHelpers.getTX("limelight");
         double ty = LimelightHelpers.getTY("limelight");
         double kP = 0.008; // Tune this value
-        double strafeSpeed = (tx - 3) * kP;
+        double strafeSpeed1 = (tx - 3) * kP;
+        double strafeSpeed2 = (tx - 2) * kP;
 
-        // side auto to score L4
-            return new SequentialCommandGroup(
-                drivetrain.applyRequest(()->
-                drive.withVelocityX(-.25*MaxSpeed)
-                .withVelocityY(0)
-                .withRotationalRate(-.11*MaxAngularRate)).withTimeout(1.2),
-                drivetrain.applyRequest(()->
-                drive.withVelocityX(-.15*MaxSpeed)
-                .withVelocityY(.17*MaxSpeed)
-                .withRotationalRate(0)).withTimeout(2));
+
+
+        // Right side auto [L4->feeder->L4] (RED SIDE!!!!!!!!!!!!!!!)
+            // return new SequentialCommandGroup(
+            //     //1
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(-.28*MaxSpeed)
+            //     .withVelocityY(0)
+            //     .withRotationalRate(-.11*MaxAngularRate)).withTimeout(1.2),
+            //     //2
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(-.13*MaxSpeed)
+            //     .withVelocityY(.14*MaxSpeed)
+            //     .withRotationalRate(0)).withTimeout(2),
+            //     //3
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(0)
+            //     .withVelocityY(0)
+            //     .withRotationalRate(0)).withTimeout(.5),
+            //     //4
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(-.35*MaxSpeed)
+            //     .withVelocityY(-.25*MaxSpeed)
+            //     .withRotationalRate(-.1*MaxAngularRate)).withTimeout(2.3),
+            //     //5
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(-.25*MaxSpeed)
+            //     .withVelocityY(0)
+            //     .withRotationalRate(0)).withTimeout(1),
+            //     //6
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(0)
+            //     .withVelocityY(0)
+            //     .withRotationalRate(0)).withTimeout(1.5),
+
+            // //L4 across from FS
+            //     // //7
+            //     // drivetrain.applyRequest(()->
+            //     // drive.withVelocityX(.25*MaxSpeed)
+            //     // .withVelocityY(.25*MaxSpeed)
+            //     // .withRotationalRate(0)).withTimeout(1));
+
+            // //L4 across from DS
+            //     //7
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(.15*MaxSpeed)
+            //     .withVelocityY(.26*MaxSpeed)
+            //     .withRotationalRate(-.1*MaxAngularRate)).withTimeout(1.55),
+            //     //8
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(0)
+            //     .withVelocityY(.22*MaxSpeed)
+            //     .withRotationalRate(0)).withTimeout(1),
+            //     //9
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(.24*MaxSpeed)
+            //     .withVelocityY(.1*MaxSpeed)
+            //     .withRotationalRate(0)).withTimeout(1));
+
         
 
+        //Left side auto [L4->feeder->L4] (RED SIDE!!!!!!!!!!!!!!)
+            // return new SequentialCommandGroup(
+            //     //1
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(-.25*MaxSpeed)
+            //     .withVelocityY(0)
+            //     .withRotationalRate(.11*MaxAngularRate)).withTimeout(1.2),
+            //     //2
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(-.14*MaxSpeed)
+            //     .withVelocityY(-.14*MaxSpeed)
+            //     .withRotationalRate(0)).withTimeout(2),
+            //     //3
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(0)
+            //     .withVelocityY(0)
+            //     .withRotationalRate(0)).withTimeout(.5),
+            //     //4
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(-.35*MaxSpeed)
+            //     .withVelocityY(.25*MaxSpeed)
+            //     .withRotationalRate(.1*MaxAngularRate)).withTimeout(2),
+            //     //5
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(-.25*MaxSpeed)
+            //     .withVelocityY(-.05*MaxSpeed)
+            //     .withRotationalRate(0)).withTimeout(1),
+            //     //6
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(0)
+            //     .withVelocityY(0)
+            //     .withRotationalRate(0)).withTimeout(1.5),
 
-        // middle auto to score L4
+            // //L4 across from FS
+            //     //7
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(.27*MaxSpeed)
+            //     .withVelocityY(-.24*MaxSpeed)
+            //     .withRotationalRate(0)).withTimeout(1.95));
+
+
+            // // L4 across from DS
+            //     // //7
+            //     // drivetrain.applyRequest(()->
+            //     // drive.withVelocityX(.15*MaxSpeed)
+            //     // .withVelocityY(-.26*MaxSpeed)
+            //     // .withRotationalRate(.1*MaxAngularRate)).withTimeout(1.55),
+            //     // //8
+            //     // drivetrain.applyRequest(()->
+            //     // drive.withVelocityX(0)
+            //     // .withVelocityY(-.20*MaxSpeed)
+            //     // .withRotationalRate(0)).withTimeout(1),
+            //     // //9
+            //     // drivetrain.applyRequest(()->
+            //     // drive.withVelocityX(.24*MaxSpeed)
+            //     // .withVelocityY(-.11*MaxSpeed)
+            //     // .withRotationalRate(0)).withTimeout(.9));
+
+
+
+        // Right side auto [L4->feeder->L4] (BLUE SIDE!!!!!!!!!!!!!!!)
+            // return new SequentialCommandGroup(
+            //     //1
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(.25*MaxSpeed)
+            //     .withVelocityY(0)
+            //     .withRotationalRate(-.11*MaxAngularRate)).withTimeout(1.2),
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(.11*MaxSpeed)
+            //     .withVelocityY(-.14*MaxSpeed)
+            //     .withRotationalRate(0)).withTimeout(2),
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(0)
+            //     .withVelocityY(0)
+            //     .withRotationalRate(0)).withTimeout(.5),
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(.35*MaxSpeed)
+            //     .withVelocityY(.25*MaxSpeed)
+            //     .withRotationalRate(-.1*MaxAngularRate)).withTimeout(2),
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(.25*MaxSpeed)
+            //     .withVelocityY(0)
+            //     .withRotationalRate(0)).withTimeout(1),
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(0)
+            //     .withVelocityY(0)
+            //     .withRotationalRate(0)).withTimeout(1.5),
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(-.15*MaxSpeed)
+            //     .withVelocityY(-.26*MaxSpeed)
+            //     .withRotationalRate(-.1*MaxAngularRate)).withTimeout(1.55),
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(0)
+            //     .withVelocityY(-.22*MaxSpeed)
+            //     .withRotationalRate(0)).withTimeout(1),
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(-.23*MaxSpeed)
+            //     .withVelocityY(-.11*MaxSpeed)
+            //     .withRotationalRate(0)).withTimeout(.9));
+
+
+
+        // Left side auto [L4->feeder->L4] (BLUE SIDE!!!!!!!!!!!!!!)
+            // return new SequentialCommandGroup(
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(.25*MaxSpeed)
+            //     .withVelocityY(0)
+            //     .withRotationalRate(.11*MaxAngularRate)).withTimeout(1.2),
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(.11*MaxSpeed)
+            //     .withVelocityY(.14*MaxSpeed)
+            //     .withRotationalRate(0)).withTimeout(2),
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(0)
+            //     .withVelocityY(0)
+            //     .withRotationalRate(0)).withTimeout(.5),
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(.35*MaxSpeed)
+            //     .withVelocityY(-.25*MaxSpeed)
+            //     .withRotationalRate(.1*MaxAngularRate)).withTimeout(2),
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(.25*MaxSpeed)
+            //     .withVelocityY(0)
+            //     .withRotationalRate(0)).withTimeout(1),
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(0)
+            //     .withVelocityY(0)
+            //     .withRotationalRate(0)).withTimeout(1.5),
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(-.15*MaxSpeed)
+            //     .withVelocityY(.26*MaxSpeed)
+            //     .withRotationalRate(.1*MaxAngularRate)).withTimeout(1.55),
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(0)
+            //     .withVelocityY(.22*MaxSpeed)
+            //     .withRotationalRate(0)).withTimeout(1),
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(-.23*MaxSpeed)
+            //     .withVelocityY(.11*MaxSpeed)
+            //     .withRotationalRate(0)).withTimeout(.9));
+
+
+
+        // middle auto to score L4 (RED SIDE!!!!!!!!!!!!)
             // return new SequentialCommandGroup(
             //     drivetrain.applyRequest(()->
             //     drive.withVelocityX(-.25*MaxSpeed)
-            //     .withVelocityY(strafeSpeed*MaxSpeed)
+            //     .withVelocityY(strafeSpeed1*MaxSpeed)
             //     .withRotationalRate(0)).withTimeout(1.2),
             //     drivetrain.applyRequest(()->
             //     drive.withVelocityX(0)
             //     .withVelocityY(0)
             //     .withRotationalRate(0)).withTimeout(10));
+
+
+
+        // middle auto to score L4 (BLUE SIDE!!!!!!!!!!!!)
+            return new SequentialCommandGroup(
+                drivetrain.applyRequest(()->
+                drive.withVelocityX(.25*MaxSpeed)
+                .withVelocityY(-strafeSpeed1*MaxSpeed)
+                .withRotationalRate(0)).withTimeout(1.2),
+                drivetrain.applyRequest(()->
+                drive.withVelocityX(0)
+                .withVelocityY(0)
+                .withRotationalRate(0)).withTimeout(15));
+
+
+
+        // Drive forward auto (RED SIDE!!!!!!!!!!!)
+            // return new SequentialCommandGroup(
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(.25*MaxSpeed)
+            //     .withVelocityY(0)
+            //     .withRotationalRate(0)).withTimeout(1.2),
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(0)
+            //     .withVelocityY(0)
+            //     .withRotationalRate(0)).withTimeout(10));
+
+
+
+        // Drive forward auto (BLUE SIDE!!!!!!!!!!!)
+            // return new SequentialCommandGroup(
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(-.25*MaxSpeed)
+            //     .withVelocityY(0)
+            //     .withRotationalRate(0)).withTimeout(1.2),
+            //     drivetrain.applyRequest(()->
+            //     drive.withVelocityX(0)
+            //     .withVelocityY(0)
+            //     .withRotationalRate(0)).withTimeout(10));
+            
             
         
             //new DriveForwardCommand(drivetrain, 0.5, 2) // Drive forward at 50% speed for 2 seconds

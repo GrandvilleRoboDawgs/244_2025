@@ -207,18 +207,74 @@ public class Robot extends TimedRobot {
 
 
 
-    if (timer.get() >= 1.2 && timer.get() < 5) {
+    if (timer.get() >= 1 && timer.get() < 3) {
         if (elevator_encoder.get() < 19050 ) {
-          elevator.set(.75);
+          elevator.set(.85);
       } else if (elevator_encoder.get() > 19050 && elevator_encoder.get() < 19550) {
           elevator.set(.5);
       } else if (elevator_encoder.get() > 19550) {
-          elevator.set(0.018);
+          elevator.set(0.019);
       }
-    } else if (timer.get() >= 5 && timer.get() < 6) {
-        m_CoralLeft.set(.5);
-        m_CoralRight.set(.5);
+      // <3.6 for side, <8.6 for middle
+    } else if (timer.get() >= 3.3 && timer.get() < 8.6) {
+        m_CoralLeft.set(.44);
+        m_CoralRight.set(.44);
+    } 
+
+    //for middle auto
+      else if (timer.get() >= 9 && timer.get() < 15) {
+        if (elevator_encoder.get() < .31 ) {
+          elevator.set(.25);
+      } else if (elevator_encoder.get() > .53 ) {
+          elevator.set(-.8);
+      } else if (elevator_encoder.get() > .451 && elevator_encoder.get() < .529) {
+          elevator.set(-.40);
+      } else if (elevator_encoder.get() > .311 && elevator_encoder.get() < .45) {
+          elevator.set(0.019);
+      }
     }
+    
+    //for side auto
+    // else if (timer.get() >= 3.9 && timer.get() < 5) {
+    //     if (elevator_encoder.get() < .31 ) {
+    //       elevator.set(.25);
+    //   } else if (elevator_encoder.get() > .53 ) {
+    //       elevator.set(-.8);
+    //   } else if (elevator_encoder.get() > .451 && elevator_encoder.get() < .529) {
+    //       elevator.set(-.40);
+    //   } else if (elevator_encoder.get() > .311 && elevator_encoder.get() < .45) {
+    //       elevator.set(0.019);
+    //   }
+    // } else if (timer.get() >= 4 && timer.get() < 10) {
+    //     if (!LimitSwitch.get()) {
+    //       m_CoralLeft.set(.44);
+    //       m_CoralRight.set(.44);
+    //   } else {
+    //       m_CoralLeft.set(0);
+    //       m_CoralRight.set(0);
+    //   }
+    // } else if (timer.get() >= 11 && timer.get() < 13) {
+    //     if (elevator_encoder.get() < 19050 ) {
+    //       elevator.set(.85);
+    //   } else if (elevator_encoder.get() > 19050 && elevator_encoder.get() < 19550) {
+    //       elevator.set(.5);
+    //   } else if (elevator_encoder.get() > 19550) {
+    //       elevator.set(0.019);
+    //   }
+    // } else if (timer.get() >= 13 && timer.get() < 13.3) {
+    //     m_CoralLeft.set(.5);
+    //     m_CoralRight.set(.5);
+    // } else if (timer.get() >= 14 && timer.get() < 15) {
+    //     if (elevator_encoder.get() < .31 ) {
+    //       elevator.set(.25);
+    //   } else if (elevator_encoder.get() > .53 ) {
+    //       elevator.set(-.80);
+    //   } else if (elevator_encoder.get() > .451 && elevator_encoder.get() < .529) {
+    //       elevator.set(-.40);
+    //   } else if (elevator_encoder.get() > .311 && elevator_encoder.get() < .45) {
+    //       elevator.set(0.019);
+    //   }
+    // }
   }
 
   @Override
@@ -278,8 +334,8 @@ public class Robot extends TimedRobot {
     //Coral Left/Right
     } else if (operator.getRawButton(PS4Controller.Button.kR2.value)){
       //Coral.set(.65);
-      m_CoralLeft.set(.5);
-      m_CoralRight.set(.5);
+      m_CoralLeft.set(.44);
+      m_CoralRight.set(.44);
 
     } else if (operator.getRawButton(PS4Controller.Button.kTouchpad.value)){
       // Coral.set(-.5);
@@ -313,22 +369,21 @@ public class Robot extends TimedRobot {
     //elevator
   
     
-      if (operator.getRawButton(PS4Controller.Button.kTriangle.value)) {
+        if (operator.getRawButton(PS4Controller.Button.kTriangle.value)) {
           if (elevator_encoder.get() < 19050 ) {
             elevator.set(.85);
         } else if (elevator_encoder.get() > 19050 && elevator_encoder.get() < 19550) {
             elevator.set(.5);
         } else if (elevator_encoder.get() > 19550) {
-            elevator.set(0.018);
+            elevator.set(0.019);
         }
-      }
-        else if (operator.getRawButton(PS4Controller.Button.kSquare.value)) {
+      } else if (operator.getRawButton(PS4Controller.Button.kSquare.value)) {
           if (elevator_encoder.get() < 8353 ) {
             elevator.set(.85);
         } else if (elevator_encoder.get() > 8353 && elevator_encoder.get() < 8853) {
             elevator.set(.5);
         } else if (elevator_encoder.get() > 8853) {
-            elevator.set(0.018);
+            elevator.set(0.019);
         } 
 
       } else if (operator.getRawButton(PS4Controller.Button.kCross.value)) {
@@ -339,11 +394,9 @@ public class Robot extends TimedRobot {
         } else if (elevator_encoder.get() > .451 && elevator_encoder.get() < .529) {
             elevator.set(-.40);
         } else if (elevator_encoder.get() > .311 && elevator_encoder.get() < .45) {
-            elevator.set(0.018);
+            elevator.set(0.019);
         }
-        else {
-          
-        }
+    
 
       } else if (operator.getRawButton(PS4Controller.Button.kCircle.value)) {
           if (elevator_encoder.get() < 2300 ) {
@@ -351,19 +404,19 @@ public class Robot extends TimedRobot {
         } else if (elevator_encoder.get() > 2300 && elevator_encoder.get() <2695 ) {
             elevator.set(.5);
         } else if (elevator_encoder.get() > 2695) {
-            elevator.set(0.018);
+            elevator.set(0.019);
         } else {
           
         }
 
       } else if (operator.getRawButton(PS4Controller.Button.kShare.value)) {
-        elevator.set(0.85);
+        elevator.set(0.25);
 
       } else if (operator.getRawButton(PS4Controller.Button.kOptions.value)) {
         elevator.set(-.85);
 
       } else {
-        elevator.set(.018);
+        elevator.set(.019);
 
       }
       
